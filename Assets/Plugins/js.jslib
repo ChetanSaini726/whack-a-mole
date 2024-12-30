@@ -1,5 +1,5 @@
 mergeInto(LibraryManager.library, {
-    CallExternalJs: function (message) {
+    CallExternalJS: function (message) {
         getWAMScore(UTF8ToString(message));
     },
 });
