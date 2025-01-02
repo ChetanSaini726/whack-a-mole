@@ -68,17 +68,17 @@ jobs:
           targetPlatform: WebGL
           allowDirtyBuild: true
 
-      - name: Change directory permissions
-        run: chmod -R u+w ./build
+     # - name: Change directory permissions
+       # run: chmod -R u+w ./build
 
       - name: Edit index.html
         run: |
             set -x
             export INDEX=$(find ./ -name index.html)
-            sed -i 's/width=960 height=600/width=auto height=auto/' $INDEX
-            sed -i 's/style="width: 960px; height: 600px;/style="width: 100%; height: 100%;/' $INDEX
-            sed -i 's/});/});\n      var WAMScore = 0; var getWAMScore = msg => (WAMScore = parseInt(msg), console.log("Win:" + WAMScore));/' $INDEX
-      # Create a release
+            perl -i -pe 's/width=960 height=600/width=auto height=auto/' $INDEX
+            perl -i -pe 's/style="width: 960px; height: 600px;/style="width: 100%; height: 100%;/' $INDEX
+            perl -i -pe 's/}\);/});\n      var WAMScore = 0; var getWAMScore = msg => (WAMScore = parseInt(msg), console.log("Win:" + WAMScore));/' $INDEX
+    # Create a release
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
