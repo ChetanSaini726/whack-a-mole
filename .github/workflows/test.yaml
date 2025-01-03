@@ -10,4 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
      - name: Checking Directory
-       run: pwd -P
+       run: |
+         pwd -P
+         which zip
+         zip --help
