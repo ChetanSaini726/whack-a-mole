@@ -95,21 +95,9 @@ jobs:
       # Output
       - uses: actions/upload-artifact@v4
         with:
-          name: Build (${{ matrix.targetPlatform }})_${{ env.DATE }}_${{ env.COMMIT_MESSAGE_HEADER}}
+          name: Build (${{ matrix.targetPlatform }})_${{ env.VERSION }}_${{ env.COMMIT_DATE }}_${{ env.COMMIT_ID }}
           path: build/${{ matrix.targetPlatform }}
-          
-  release:
-    name: Release my project
-    needs: [build]
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        targetPlatform:
-          - WebGL # WebGL.
-    permissions:
-      actions: write
-    steps:
+      
       # Create a release
       - name: Create Release
         uses: actions/create-release@v1
@@ -117,7 +105,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ env.VERSION }}
-          release_name: Release ${{ matrix.targetPlatform }}_${{ env.VERSION}}
+          release_name: Release ${{ matrix.targetPlatform }}_${{ env.VERSION }}_${{ env.COMMIT_DATE }}_${{ env.COMMIT_ID }}
           draft: false
           prerelease: false
 
@@ -129,5 +117,6 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: build/${{ matrix.targetPlatform }}
-          asset_name: Build_${{ matrix.targetPlatform }}_${{ env.VERSION }}.zip
+          asset_name: Build_${{ matrix.targetPlatform }}_${{ env.VERSION }}_${{ env.COMMIT_DATE }}_${{ env.COMMIT_ID }}.zip
           asset_content_type: application/zip
+
