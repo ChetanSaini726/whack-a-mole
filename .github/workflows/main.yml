@@ -155,7 +155,7 @@ jobs:
           name: WhackAMole_${{ matrix.targetPlatform }}_${{ env.BUILD_VERSION }}_${{ env.BUILD_COMMIT_ID }}
           tag_name: ${{ matrix.targetPlatform }}_${{ env.BUILD_VERSION }}_${{ env.BUILD_COMMIT_ID }}
           files: |
-            build-artifacts/${{ matrix.targetPlatform }}_${{ env.BUILD_VERSION }}_${{ env.BUILD_COMMIT_ID }}.zip
+            build-artifacts/${{ matrix.targetPlatform }}/${{ matrix.targetPlatform }}_${{ env.BUILD_VERSION }}_${{ env.BUILD_COMMIT_ID }}.zip
         
         
       # # Create a release
