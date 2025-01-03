@@ -87,7 +87,7 @@ jobs:
           allowDirtyBuild: true
 
       - name: Edit index.html
-        id: edit_index.html
+        id: edit_index_html
         run: |
             set -x
             export INDEX=$(find ./ -name index.html)
