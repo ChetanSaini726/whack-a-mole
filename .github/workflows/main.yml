@@ -126,7 +126,7 @@ jobs:
         id: upload_build_artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.targetPlatform }}_${{ steps.build_project.outputs.buildVersion }}_${{ env.COMMIT_ID }}.zip
+          name: ${{ matrix.targetPlatform }}_${{ steps.build_project.outputs.buildVersion }}_${{ env.COMMIT_ID }}
           path: build/${{ matrix.targetPlatform }}
         
 
@@ -155,7 +155,7 @@ jobs:
           name: WhackAMole_${{ matrix.targetPlatform }}_${{ env.BUILD_VERSION }}_${{ env.BUILD_COMMIT_ID }}
           tag_name: ${{ matrix.targetPlatform }}_${{ env.BUILD_VERSION }}_${{ env.BUILD_COMMIT_ID }}
           files: |
-            build-artifacts/${{ matrix.targetPlatform }}/${{ matrix.targetPlatform }}_${{ env.BUILD_VERSION }}_${{ env.BUILD_COMMIT_ID }}.zip
+            build-artifacts/${{ matrix.targetPlatform }}/${{ matrix.targetPlatform }}_${{ env.BUILD_VERSION }}_${{ env.BUILD_COMMIT_ID }}*
         
         
       # # Create a release
