@@ -128,7 +128,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BUILD_VERSION: ${{ needs.build.outputs.output1 }}
           BUILD_COMMIT_ID: ${{ needs.build.outputs.output2 }}
-          BUILD_PLATFORM: ${{ need.build.outputs.output3 }}
+          BUILD_PLATFORM: ${{ needs.build.outputs.output3 }}
         with:
           tag_name: ${{ env.BUILD_PLATFORM }}_${{ env.BUILD_VERSION }}_${{ env.BUILD_COMMIT_ID }}
           release_name: ${{ env.BUILD_PLATFORM }}_${{ env.BUILD_VERSION }}_${{ env.BUILD_COMMIT_ID }}
@@ -143,7 +143,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BUILD_VERSION: ${{ needs.build.outputs.output1 }}
           BUILD_COMMIT_ID: ${{ needs.build.outputs.output2 }}
-          BUILD_PLATFORM: ${{ need.build.outputs.output3 }}
+          BUILD_PLATFORM: ${{ needs.build.outputs.output3 }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ${{ env.GITHUB_WORKSPACE }}
