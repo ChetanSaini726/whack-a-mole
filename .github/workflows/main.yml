@@ -1,6 +1,10 @@
 name: Build Unity Project
 
-on: [push, pull_request]
+#on: [push, pull_request]
+
+on: 
+  workflow_dispatch:
+
 
 permissions:
   contents: write
@@ -18,6 +22,7 @@ jobs:
       matrix:
         targetPlatform:
           - WebGL # WebGL.
+    
     steps:
       # Checkout (without LFS)
       - name: Checkout repository
@@ -59,12 +64,12 @@ jobs:
       #  with:
       #    githubToken: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract date
-        id: extract_date
-        run: |
-          COMMIT_DATE=$(date +'%Y.%m.%d')
-          echo "COMMIT_DATE=${COMMIT_DATE}" >> $GITHUB_ENV
-          echo "$COMMIT_DATE"
+      # - name: Extract date
+      #   id: extract_date
+      #   run: |
+      #     COMMIT_DATE=$(date +'%Y.%m.%d')
+      #     echo "COMMIT_DATE=${COMMIT_DATE}" >> $GITHUB_ENV
+      #     echo "$COMMIT_DATE"
 
       - name: Get commit message header
         id: get_commit_message
@@ -81,9 +86,11 @@ jobs:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          VERSION: 0.0.1
         with:
           targetPlatform: ${{ matrix.targetPlatform }}
           allowDirtyBuild: true
+          versioning: Custom
           version: 0.0.1
 
       - name: Edit index.html
@@ -91,7 +98,6 @@ jobs:
         run: |
             set -x
             export INDEX=$(find ./ -name index.html)
-            echo "Project Version: ${{ steps.build_project.outputs.buildVersion }}"
             sudo sed -i 's/width=960 height=600/width=auto height=auto/' $INDEX
             sudo sed -i 's/style="width: 960px; height: 600px;/style="width: 100%; height: 100%;/' $INDEX
             sudo sed -i 's/});/});\n      var WAMScore = 0; var getWAMScore = msg => (WAMScore = parseInt(msg), console.log("Win:" + WAMScore));/' $INDEX
@@ -101,25 +107,23 @@ jobs:
         id: upload_build_artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: Build_${{ matrix.targetPlatform }}_${{ env.COMMIT_DATE }}_${{ env.COMMIT_ID }}.zip
+          name: ${{ matrix.targetPlatform }}_${{ steps.build_project.outputs.buildVersion }}_${{ env.COMMIT_ID }}.zip
           path: build/${{ matrix.targetPlatform }}
-          
+    
+    outputs:
+      output1: ${{ steps.build_project.outputs.buildVersion }}
+      output2: ${{ env.COMMIT_ID }}
+      output3: ${{ matrix.targetPlatform }}     
 
   release:
-    name: Release my project
-    needs: [build]
+    name: Release project
+    needs: build
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        targetPlatform:
-          - WebGL # WebGL.
-    permissions:
-      actions: write
     steps:
-      - run: |
-          echo "Project Version: ${{ needs.build.outputs.buildVersion }}"
-          echo "Project Version: ${{ needs.build.build_project_outputs.buildVersion }}"
+      - env:
+          BUILD_VERSION: ${{ needs.build.outputs.output1 }}
+          BUILD_COMMIT_ID: ${{ needs.build.outputs.output2 }}
+          BUILD_PLATFORM: ${{ need.build.outputs.output3 }}
       - name: Download Build Artifact
         uses: actions/download-artifact@v4
         
@@ -130,8 +134,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ env.COMMIT_DATE }}_${{ env.COMMIT_ID }}
-          release_name: Release ${{ matrix.targetPlatform }}_${{ env.COMMIT_DATE }}_${{ env.COMMIT_ID }}
+          tag_name: ${{ env.BUILD_PLATFORM }}_${{ env.BUILD_VERSION }}_${{ env.BUILD_COMMIT_ID }}
+          release_name: ${{ env.BUILD_PLATFORM }}_${{ env.BUILD_VERSION }}_${{ env.BUILD_COMMIT_ID }}
           draft: false
           prerelease: false
 
@@ -144,6 +148,6 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ${{ env.GITHUB_WORKSPACE }}
-          asset_name: Build_${{ matrix.targetPlatform }}_${{ env.COMMIT_DATE }}_${{ env.COMMIT_ID }}.zip
+          asset_name: ${{ env.BUILD_PLATFORM }}_${{ env.BUILD_VERSION }}_${{ env.BUILD_COMMIT_ID }}.zip
           asset_content_type: application/zip
 
