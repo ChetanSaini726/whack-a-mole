@@ -1,8 +1,14 @@
 name: Build Unity Project
 
-on: [push, pull_request]
+#on: [push, pull_request]
 
-#on: [workflow_dispatch]
+on:
+  # Manual trigger: This allows the workflow to be triggered manually from GitHub UI
+  workflow_dispatch:
+
+  # Scheduled trigger: This runs the workflow on a schedule (daily at midnight UTC)
+  schedule:
+    - cron: '0 0 * * *'  # Every day at midnight UTC
 
 permissions:
   contents: write
@@ -18,7 +24,6 @@ jobs:
     outputs:
       output1: ${{ steps.build_project.outputs.buildVersion }}
       output2: ${{ env.COMMIT_ID }}
-      output3: ${{ matrix.targetPlatform }} 
     strategy:
       fail-fast: false
       matrix:
@@ -28,6 +33,21 @@ jobs:
       # Checkout (without LFS)
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Check if there was a recent push
+        id: check_push
+        run: |
+          # Get the timestamp of the last commit
+          last_push=$(git log -1 --format=%ct)
+          current_time=$(date +%s)
+          time_diff=$((current_time - last_push))
+          
+          # Define a threshold (e.g., 12 hours = 43200 seconds)
+          if [ $time_diff -gt 43200 ]; then
+            echo "No recent push. Skipping scheduled job."
+            exit 1  # Fail the step to stop further execution
+          fi
+          echo "Recent push detected, continuing with the scheduled job."
 
       # Git LFS
       - name: Create LFS file list
@@ -87,12 +107,10 @@ jobs:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-          VERSION: 0.0.1
         with:
           targetPlatform: ${{ matrix.targetPlatform }}
           allowDirtyBuild: true
-          versioning: Custom
-          version: 0.0.1
+          versioning: Semantic
 
       - name: Edit index.html
         id: edit_index_html
@@ -116,41 +134,55 @@ jobs:
     name: Release project
     needs: build
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        targetPlatform:
+          - WebGL # WebGL. 
     steps:   
       - name: Download Build Artifact
         uses: actions/download-artifact@v4
-        env:
-          BUILD_PLATFORM: ${{ needs.build.outputs.output3 }}
         with:
-          path: build/${{ env.BUILD_PLATFORM }}
+          path: build-artifacts/${{ matrix.targetPlatform }}
+          
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BUILD_VERSION: ${{ needs.build.outputs.output1 }}
+          BUILD_COMMIT_ID: ${{ needs.build.outputs.output2 }}
+        with:
+          name: WhackAMole_${{ matrix.targetPlatform }}_${{ env.BUILD_VERSION }}_${{ env.BUILD_COMMIT_ID }}
+          tag_name: ${{ matrix.targetPlatform }}_${{ env.BUILD_VERSION }}_${{ env.BUILD_COMMIT_ID }}
+          files: |
+            build-artifacts/${{ matrix.targetPlatform }}_${{ env.BUILD_VERSION }}_${{ env.BUILD_COMMIT_ID }}.zip
         
-      # Create a release
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BUILD_VERSION: ${{ needs.build.outputs.output1 }}
-          BUILD_COMMIT_ID: ${{ needs.build.outputs.output2 }}
-          BUILD_PLATFORM: ${{ needs.build.outputs.output3 }}
-        with:
-          tag_name: ${{ env.BUILD_PLATFORM }}_${{ env.BUILD_VERSION }}_${{ env.BUILD_COMMIT_ID }}
-          release_name: ${{ env.BUILD_PLATFORM }}_${{ env.BUILD_VERSION }}_${{ env.BUILD_COMMIT_ID }}
-          draft: false
-          prerelease: false
+        
+      # # Create a release
+      # - name: Create Release
+      #   id: create_release
+      #   uses: actions/create-release@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #     BUILD_VERSION: ${{ needs.build.outputs.output1 }}
+      #     BUILD_COMMIT_ID: ${{ needs.build.outputs.output2 }}
+      #   with:
+      #     tag_name: {{ matrix.targetPlatform }}_${{ env.BUILD_VERSION }}_${{ env.BUILD_COMMIT_ID }}
+      #     release_name: {{ matrix.targetPlatform }}_${{ env.BUILD_VERSION }}_${{ env.BUILD_COMMIT_ID }}
+      #     draft: false
+      #     prerelease: false
 
-      # Upload build artifacts to the release
-      - name: Upload Release Asset
-        id: upload_release_asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BUILD_VERSION: ${{ needs.build.outputs.output1 }}
-          BUILD_COMMIT_ID: ${{ needs.build.outputs.output2 }}
-          BUILD_PLATFORM: ${{ needs.build.outputs.output3 }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: build/${{ env.BUILD_PLATFORM }}/${{ env.BUILD_PLATFORM }}_${{ env.BUILD_VERSION }}_${{ env.BUILD_COMMIT_ID }}.zip
-          asset_name: ${{ env.BUILD_PLATFORM }}_${{ env.BUILD_VERSION }}_${{ env.BUILD_COMMIT_ID }}.zip
-          asset_content_type: application/zip
+      # # Upload build artifacts to the release
+      # - name: Upload Release Asset
+      #   id: upload_release_asset
+      #   uses: actions/upload-release-asset@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #     BUILD_VERSION: ${{ needs.build.outputs.output1 }}
+      #     BUILD_COMMIT_ID: ${{ needs.build.outputs.output2 }}
+      #   with:
+      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
+      #     asset_path: build/{{ matrix.targetPlatform }}/{{ matrix.targetPlatform }}_${{ env.BUILD_VERSION }}_${{ env.BUILD_COMMIT_ID }}.zip
+      #     asset_name: {{ matrix.targetPlatform }}_${{ env.BUILD_VERSION }}_${{ env.BUILD_COMMIT_ID }}.zip
+      #     asset_content_type: application/zip
 
