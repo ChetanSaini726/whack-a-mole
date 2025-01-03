@@ -103,8 +103,7 @@ jobs:
     steps:
       # Create a release
       - name: Create Release
-      - uses: actions/checkout@v3
-      - uses: ncipollo/release-action@v1
+        uses: ncipollo/release-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
