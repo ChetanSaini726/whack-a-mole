@@ -65,6 +65,7 @@ jobs:
           COMMIT_DATE=$(date +'%Y.%m.%d')
           echo "COMMIT_DATE=${COMMIT_DATE}" >> $GITHUB_ENV
           echo "$COMMIT_DATE"
+          echo "VERSION=0.0.1" >> $GITHUB_ENV && echo "VERSION=0.0.1"
 
       - name: Get commit message header
         id: get_commit_message
@@ -75,6 +76,7 @@ jobs:
         
       # Build
       - name: Build project
+        id: build_project
         uses: game-ci/unity-builder@v4
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
@@ -85,20 +87,25 @@ jobs:
           allowDirtyBuild: true
 
       - name: Edit index.html
+        id: edit_index.html
         run: |
             set -x
             export INDEX=$(find ./ -name index.html)
             sudo sed -i 's/width=960 height=600/width=auto height=auto/' $INDEX
             sudo sed -i 's/style="width: 960px; height: 600px;/style="width: 100%; height: 100%;/' $INDEX
             sudo sed -i 's/});/});\n      var WAMScore = 0; var getWAMScore = msg => (WAMScore = parseInt(msg), console.log("Win:" + WAMScore));/' $INDEX
-      # Output
-      - uses: actions/upload-artifact@v4
-        with:
-          name: Build (${{ matrix.targetPlatform }})_${{ env.VERSION }}_${{ env.COMMIT_DATE }}_${{ env.COMMIT_ID }}
-          path: build/${{ matrix.targetPlatform }}
       
-      # Create a release
+      # Output
+      - name: Upload build artifacts
+        id: upload_build_artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Build (${{ matrix.targetPlatform }})_${{ env.COMMIT_DATE }}_${{ env.COMMIT_ID }}
+          path: build/${{ matrix.targetPlatform }}
+          
+    # Create a release
       - name: Create Release
+        id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -110,6 +117,7 @@ jobs:
 
       # Upload build artifacts to the release
       - name: Upload Release Asset
+        id: upload_release_asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -118,4 +126,3 @@ jobs:
           asset_path: build/${{ matrix.targetPlatform }}
           asset_name: Build_${{ matrix.targetPlatform }}_${{ env.COMMIT_DATE }}_${{ env.COMMIT_ID }}.zip
           asset_content_type: application/zip
-
