@@ -75,15 +75,7 @@ jobs:
             Library-${{ matrix.targetPlatform }}
             Library-
 
-      # Test
-      #- name: Run tests
-      #  uses: game-ci/unity-test-runner@v4
-      #  env:
-      #    UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-      #    UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
-      #    UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-      #  with:
-      #    githubToken: ${{ secrets.GITHUB_TOKEN }}
+      
 
       # - name: Extract date
       #   id: extract_date
@@ -129,7 +121,6 @@ jobs:
           name: ${{ matrix.targetPlatform }}_${{ steps.build_project.outputs.buildVersion }}_${{ env.COMMIT_ID }}
           path: build/${{ matrix.targetPlatform }}
         
-
   release:
     name: Release project
     needs: build
@@ -144,6 +135,10 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: build-artifacts/${{ matrix.targetPlatform }}
+  
+      - run: |
+          ls -R
+          ls -R build-artifacts/${{ matrix.targetPlatform }}
           
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
@@ -155,9 +150,26 @@ jobs:
           name: WhackAMole_${{ matrix.targetPlatform }}_${{ env.BUILD_VERSION }}_${{ env.BUILD_COMMIT_ID }}
           tag_name: ${{ matrix.targetPlatform }}_${{ env.BUILD_VERSION }}_${{ env.BUILD_COMMIT_ID }}
           files: |
-            build-artifacts/${{ matrix.targetPlatform }}/${{ matrix.targetPlatform }}_${{ env.BUILD_VERSION }}_${{ env.BUILD_COMMIT_ID }}*
-        
-        
+            build-artifacts/${{ matrix.targetPlatform }}/${{ matrix.targetPlatform }}_${{ env.BUILD_VERSION }}_${{ env.BUILD_COMMIT_ID }}.zip
+  
+  test:
+    name: Run tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        targetPlatform:
+          - WebGL # WebGL. 
+    steps:   
+      - uses: game-ci/unity-test-runner@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+
+          
       # # Create a release
       # - name: Create Release
       #   id: create_release
