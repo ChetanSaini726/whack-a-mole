@@ -58,13 +58,13 @@ jobs:
       - name: Extract date
         id: extract_date
         run: |
-          COMMIT_DATE=$(date +'%Y.%m.%d')
+          export COMMIT_DATE=$(date +'%Y.%m.%d')
           echo "COMMIT_DATE=$(COMMIT_DATE)" >> $GITHUB_ENV
 
       - name: Get commit message header
         id: get_commit_message
         run: |
-          COMMIT_MESSAGE_HEADER=$(git log -1 --pretty=%B | head -n 1)
+          export COMMIT_MESSAGE_HEADER=$(git log -1 --pretty=%B | head -n 1)
           echo "COMMIT_MESSAGE_HEADER=${COMMIT_MESSAGE_HEADER}" >> $GITHUB_ENV
 
       # Build
