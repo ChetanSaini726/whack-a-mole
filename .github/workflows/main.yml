@@ -74,7 +74,7 @@ jobs:
           echo "$COMMIT_ID"
           
       - name: Unity - Activate
-        uses: game-ci/unity-activate@2
+        uses: game-ci/unity-activate@v2
         
       # Build
       - name: Build project
@@ -111,7 +111,6 @@ jobs:
         targetPlatform:
           - WebGL # WebGL.
     permissions:
-      contents: write
       actions: write
     steps:
       # Create a release
