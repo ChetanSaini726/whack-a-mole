@@ -1,13 +1,6 @@
-name: Build Unity WebGL
+name: Build Unity Project
 
 on: [push, pull_request]
-
-permissions:
-  contents: write
-  actions: read
-  checks: write
-  pull-requests: write
-  packages: write
 
 jobs:
   build:
@@ -18,6 +11,9 @@ jobs:
       matrix:
         targetPlatform:
           - WebGL # WebGL.
+    permissions:
+      contents: write
+      actions: read
     steps:
       # Checkout (without LFS)
       - name: Checkout repository
@@ -62,8 +58,8 @@ jobs:
       - name: Extract date
         id: extract_date
         run: |
-          echo "DATE=$(date +'%Y.%m.%d')" >> $GITHUB_ENV
-          echo "DATE=$(DATE)"
+          COMMIT_DATE=$(date +'%Y.%m.%d')
+          echo "COMMIT_DATE=$(COMMIT_DATE)" >> $GITHUB_ENV
 
       - name: Get commit message header
         id: get_commit_message
@@ -106,8 +102,8 @@ jobs:
         targetPlatform:
           - WebGL # WebGL.
     permissions:
-          contents: write
-          actions: write
+      contents: write
+      actions: write
     steps:
       # Create a release
       - name: Create Release
