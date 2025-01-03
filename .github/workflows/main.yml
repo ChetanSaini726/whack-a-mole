@@ -59,7 +59,7 @@ jobs:
         id: extract_date
         run: |
           COMMIT_DATE=$(date +'%Y.%m.%d')
-          echo "COMMIT_DATE=$(COMMIT_DATE)" >> $GITHUB_ENV
+          echo "COMMIT_DATE=${COMMIT_DATE}" >> $GITHUB_ENV
           echo "$COMMIT_DATE"
 
       - name: Get commit message header
