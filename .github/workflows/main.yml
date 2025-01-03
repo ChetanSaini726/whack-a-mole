@@ -14,6 +14,9 @@ jobs:
     permissions:
       contents: write
       actions: read
+      checks: write
+      pull-requests: write
+      packages: write
     steps:
       # Checkout (without LFS)
       - name: Checkout repository
@@ -68,6 +71,7 @@ jobs:
           COMMIT_ID=$(git log -1 --pretty=%h)
           echo "COMMIT_ID=${COMMIT_ID}" >> $GITHUB_ENV
           echo "$COMMIT_ID"
+          
 
       # Build
       - name: Build project
