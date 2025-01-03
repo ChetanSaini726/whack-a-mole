@@ -112,7 +112,7 @@ jobs:
     steps:
       # Create a release
       - name: Create Release
-        uses: actions/release-action@v1
+        uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
