@@ -112,18 +112,18 @@ jobs:
     steps:
       # Create a release
       - name: Create Release
-        uses: ncipollo/release-action@v1
+        uses: actions/release-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ env.VERSION }}
-          release_name: ${{ matrix.targetPlatform }}_${{ env.VERSION}}
+          release_name: Release ${{ matrix.targetPlatform }}_${{ env.VERSION}}
           draft: false
           prerelease: false
 
       # Upload build artifacts to the release
       - name: Upload Release Asset
-        uses: tanyagray/upload-release-asset@v1
+        uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
