@@ -75,8 +75,6 @@ jobs:
             Library-${{ matrix.targetPlatform }}
             Library-
 
-      
-
       # - name: Extract date
       #   id: extract_date
       #   run: |
@@ -137,8 +135,7 @@ jobs:
           path: build-artifacts/${{ matrix.targetPlatform }}
   
       - run: |
-          ls -R
-          ls -R build-artifacts/${{ matrix.targetPlatform }}
+          zip -r build-artifacts/${{ matrix.targetPlatform }}/${{ matrix.targetPlatform }}_${{ env.BUILD_VERSION }}_${{ env.BUILD_COMMIT_ID }}.zip -9 build-artifacts/${{ matrix.targetPlatform }}/${{ matrix.targetPlatform }}_${{ env.BUILD_VERSION }}_${{ env.BUILD_COMMIT_ID }}/${{ matrix.targetPlatform}}/
           
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
@@ -160,7 +157,52 @@ jobs:
       matrix:
         targetPlatform:
           - WebGL # WebGL. 
-    steps:   
+    steps:
+      #  Checkout (without LFS)
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check if there was a recent push
+        id: check_push
+        run: |
+          # Get the timestamp of the last commit
+          last_push=$(git log -1 --format=%ct)
+          current_time=$(date +%s)
+          time_diff=$((current_time - last_push))
+          
+          # Define a threshold (e.g., 12 hours = 43200 seconds)
+          if [ $time_diff -gt 43200 ]; then
+            echo "No recent push. Skipping scheduled job."
+            exit 1  # Fail the step to stop further execution
+          fi
+          echo "Recent push detected, continuing with the scheduled job."
+
+      # Git LFS
+      - name: Create LFS file list
+        run: git lfs ls-files -l | cut -d' ' -f1 | sort > .lfs-assets-id
+
+      - name: Restore TEST LFS cache
+        uses: actions/cache@v4
+        id: lfs-cache
+        with:
+          path: .git/lfs
+          key: ${{ runner.os }}-Test-lfs-${{ hashFiles('.lfs-assets-id') }}
+
+      - name: Git LFS Pull
+        run: |
+          git lfs pull
+          git add .
+          git reset --hard
+          
+      # Cache
+      - uses: actions/cache@v4
+        with:
+          path: Library
+          key: Library-Test-${{ matrix.targetPlatform }}-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          restore-keys: |
+            Library-Test-${{ matrix.targetPlatform }}
+            Library-
+            
       - uses: game-ci/unity-test-runner@v4
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
@@ -168,33 +210,3 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           githubToken: ${{ secrets.GITHUB_TOKEN }}
-
-          
-      # # Create a release
-      # - name: Create Release
-      #   id: create_release
-      #   uses: actions/create-release@v1
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #     BUILD_VERSION: ${{ needs.build.outputs.output1 }}
-      #     BUILD_COMMIT_ID: ${{ needs.build.outputs.output2 }}
-      #   with:
-      #     tag_name: {{ matrix.targetPlatform }}_${{ env.BUILD_VERSION }}_${{ env.BUILD_COMMIT_ID }}
-      #     release_name: {{ matrix.targetPlatform }}_${{ env.BUILD_VERSION }}_${{ env.BUILD_COMMIT_ID }}
-      #     draft: false
-      #     prerelease: false
-
-      # # Upload build artifacts to the release
-      # - name: Upload Release Asset
-      #   id: upload_release_asset
-      #   uses: actions/upload-release-asset@v1
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #     BUILD_VERSION: ${{ needs.build.outputs.output1 }}
-      #     BUILD_COMMIT_ID: ${{ needs.build.outputs.output2 }}
-      #   with:
-      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
-      #     asset_path: build/{{ matrix.targetPlatform }}/{{ matrix.targetPlatform }}_${{ env.BUILD_VERSION }}_${{ env.BUILD_COMMIT_ID }}.zip
-      #     asset_name: {{ matrix.targetPlatform }}_${{ env.BUILD_VERSION }}_${{ env.BUILD_COMMIT_ID }}.zip
-      #     asset_content_type: application/zip
-
