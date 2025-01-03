@@ -1,7 +1,9 @@
 name: Build Unity Project
 
-on: [push, pull_request]
+#on: [push, pull_request]
 
+on:
+  workflow_dispatch:
 permissions:
   contents: write
   actions: read
@@ -17,8 +19,11 @@ jobs:
       fail-fast: false
       matrix:
         targetPlatform:
-          - WebGL # WebGL.
-    
+          - WebGL # WebGL. 
+    outputs:
+      output1: ${{ steps.build_project.outputs.buildVersion }}
+      output2: ${{ env.COMMIT_ID }}
+      output3: ${{ matrix.targetPlatform }} 
     steps:
       # Checkout (without LFS)
       - name: Checkout repository
@@ -105,11 +110,7 @@ jobs:
         with:
           name: ${{ matrix.targetPlatform }}_${{ steps.build_project.outputs.buildVersion }}_${{ env.COMMIT_ID }}.zip
           path: build/${{ matrix.targetPlatform }}
-    
-    outputs:
-      output1: ${{ steps.build_project.outputs.buildVersion }}
-      output2: ${{ env.COMMIT_ID }}
-      output3: ${{ matrix.targetPlatform }}     
+        
 
   release:
     name: Release project
