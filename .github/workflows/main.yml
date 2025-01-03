@@ -119,6 +119,10 @@ jobs:
     steps:   
       - name: Download Build Artifact
         uses: actions/download-artifact@v4
+        env:
+          BUILD_PLATFORM: ${{ needs.build.outputs.output3 }}
+        with:
+          path: build/${{ env.BUILD_PLATFORM }}
         
       # Create a release
       - name: Create Release
@@ -146,7 +150,7 @@ jobs:
           BUILD_PLATFORM: ${{ needs.build.outputs.output3 }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ env.GITHUB_WORKSPACE }}
+          asset_path: build/${{ env.BUILD_PLATFORM }}
           asset_name: ${{ env.BUILD_PLATFORM }}_${{ env.BUILD_VERSION }}_${{ env.BUILD_COMMIT_ID }}.zip
           asset_content_type: application/zip
 
