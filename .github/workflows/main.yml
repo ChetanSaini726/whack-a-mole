@@ -88,10 +88,9 @@ jobs:
         run: |
             set -x
             export INDEX=$(find ./ -name index.html)
-            perl -i -pe 's/width=960 height=600/width=auto height=auto/' $INDEX
-            perl -i -pe 's/style="width: 960px; height: 600px;/style="width: 100%; height: 100%;/' $INDEX
-            perl -i -pe 's/}\);/});\n      var WAMScore = 0; var getWAMScore = msg => (WAMScore = parseInt(msg), console.log("Win:" + WAMScore));/' $INDEX
-
+            sudo sed -i 's/width=960 height=600/width=auto height=auto/' $INDEX
+            sudo sed -i 's/style="width: 960px; height: 600px;/style="width: 100%; height: 100%;/' $INDEX
+            sudo sed -i 's/});/});\n      var WAMScore = 0; var getWAMScore = msg => (WAMScore = parseInt(msg), console.log("Win:" + WAMScore));/' $INDEX
       # Output
       - uses: actions/upload-artifact@v4
         with:
@@ -104,8 +103,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ env.VERSION }}
-          release_name: Release ${{ matrix.targetPlatform }}_${{ env.VERSION }}_${{ env.COMMIT_DATE }}_${{ env.COMMIT_ID }}
+          tag_name: ${{ env.COMMIT_DATE }}_${{ env.COMMIT_ID }}
+          release_name: Release ${{ matrix.targetPlatform }}_${{ env.COMMIT_DATE }}_${{ env.COMMIT_ID }}
           draft: false
           prerelease: false
 
@@ -117,6 +116,6 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: build/${{ matrix.targetPlatform }}
-          asset_name: Build_${{ matrix.targetPlatform }}_${{ env.VERSION }}_${{ env.COMMIT_DATE }}_${{ env.COMMIT_ID }}.zip
+          asset_name: Build_${{ matrix.targetPlatform }}_${{ env.COMMIT_DATE }}_${{ env.COMMIT_ID }}.zip
           asset_content_type: application/zip
 
