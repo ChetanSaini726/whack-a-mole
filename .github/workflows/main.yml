@@ -1,10 +1,6 @@
 name: Build Unity Project
 
-#on: [push, pull_request]
-
-on: 
-  workflow_dispatch:
-
+on: [push, pull_request]
 
 permissions:
   contents: write
