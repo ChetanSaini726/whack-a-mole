@@ -1,6 +1,11 @@
 name: Delete old workflow runs
 
 on:
+
+  # Manual trigger: This allows the workflow to be triggered manually from GitHub UI
+  workflow_dispatch:
+
+  # Schedule trigger: This triggers the workflow at 00:00 UTC of the 1st Day of Every Month
   schedule:
     - cron: '0 0 1 * *'
 
@@ -18,3 +23,4 @@ jobs:
           repository: ChetanSaini726/whack-a-mole
           retain_days: 30
           keep_minimum_runs: 6
+          delete_run_by_conclusion_pattern: failure
