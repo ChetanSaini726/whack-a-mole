@@ -1,15 +1,20 @@
 name: Delete old workflow runs
+
 on:
   schedule:
-    - cron: '0 0 1 * *' # Run monthly, at 00:00 on the 1st day of month.
+    - cron: '0 0 1 * *'
+
 jobs:
   del_runs:
     runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: write
     steps:
-      - name: Delete workflow runs
+      - name: Delete old workflow runs
         uses: JuvenileQ/delete-workflow-runs@main
         with:
-          token: ${{ github.token }}
-          repository: ${{ github.repository }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ChetanSaini726/whack-a-mole
           retain_days: 30
-          keep_minimum_runs: 10
+          keep_minimum_runs: 6
