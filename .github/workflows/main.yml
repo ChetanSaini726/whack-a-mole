@@ -1,14 +1,14 @@
 name: Build Unity Project
 
-#on: [push, pull_request]
+on: [push, pull_request]
 
-on:
-  # Manual trigger: This allows the workflow to be triggered manually from GitHub UI
-  workflow_dispatch:
+# on:
+#   # Manual trigger: This allows the workflow to be triggered manually from GitHub UI
+#   workflow_dispatch:
 
-  # Scheduled trigger: This runs the workflow on a schedule (daily at midnight UTC)
-  schedule:
-    - cron: '0 0 * * *'  # Every day at midnight UTC
+#   # Scheduled trigger: This runs the workflow on a schedule (daily at midnight UTC)
+#   schedule:
+#     - cron: '0 0 * * *'  # Every day at midnight UTC
 
 permissions:
   contents: write
