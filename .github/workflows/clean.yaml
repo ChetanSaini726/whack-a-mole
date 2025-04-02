@@ -6,8 +6,8 @@ on:
   workflow_dispatch:
 
   # Schedule trigger: This triggers the workflow at 00:00 UTC of the 1st Day of Every Month
-  schedule:
-    - cron: '0 0 1 * *'
+  # schedule:
+  #   - cron: '0 0 1 * *'
 
 jobs:
   del_runs:
