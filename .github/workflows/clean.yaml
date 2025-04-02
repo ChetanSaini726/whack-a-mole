@@ -23,4 +23,4 @@ jobs:
           repository: ChetanSaini726/whack-a-mole
           retain_days: 30
           keep_minimum_runs: 6
-          delete_run_by_conclusion_pattern: failure
+          delete_run_by_conclusion_pattern: failure, cancelled
