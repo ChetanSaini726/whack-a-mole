@@ -1,6 +1,6 @@
 name: Build Unity Project
 
-on: [push, pull_request]
+on: [workflow_dispatch, push, pull_request]
 
 # on:
 #   # Manual trigger: This allows the workflow to be triggered manually from GitHub UI
