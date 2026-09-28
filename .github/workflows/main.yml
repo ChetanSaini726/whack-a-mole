@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       output1: ${{ steps.build_project.outputs.buildVersion }}
-      output2: ${{ env.COMMIT_ID }}
+      output2: ${{ steps.get_commit_message.outputs.COMMIT_ID }}
     strategy:
       fail-fast: false
       matrix:
@@ -37,6 +37,12 @@ jobs:
       - name: Check if there was a recent push
         id: check_push
         run: |
+          # Skip timestamp check if triggered manually
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "Workflow triggered manually. Continuing step."
+            exit 0
+          fi
+          
           # Get the timestamp of the last commit
           last_push=$(git log -1 --format=%ct)
           current_time=$(date +%s)
@@ -87,6 +93,7 @@ jobs:
         run: |
           COMMIT_ID=$(git log -1 --pretty=%h)
           echo "COMMIT_ID=${COMMIT_ID}" >> $GITHUB_ENV
+          echo "COMMIT_ID=${COMMIT_ID}" >> $GITHUB_OUTPUT
           echo "$COMMIT_ID"
         
       # Build
